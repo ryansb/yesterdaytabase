@@ -1,0 +1,8 @@
+{
+    "domain": "mysite.com",
+    "db": {
+        "name": "my-rds-dbname",
+        "security_group": "sg-12345678",
+        "subnet_group": "net-group-12345678"
+    }
+}

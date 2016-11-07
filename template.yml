@@ -28,7 +28,8 @@ Resources:
       Comment: DNS name for a DB from yesterday's snapshot
       HostedZoneName: !Sub "${DomainRoot}."
       Name: !Sub "${DBName}.${DomainRoot}"
-      ResourceRecords: !GetAtt Database.Endpoint.Address
+      ResourceRecords:
+        - !GetAtt Database.Endpoint.Address
       TTL: 300
       Type: CNAME
   Database:

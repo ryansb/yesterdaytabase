@@ -3,7 +3,7 @@
 
 """
 This function creates a CFN stack from yesterday's production DB
-snapshot and makes it available at 'dev-yesterday-db.clearviewsocial.com'
+snapshot and makes it available at 'dbname.yoursite.com'
 """
 
 from __future__ import print_function
@@ -40,7 +40,6 @@ def handler(event, context):
         except:
             log.exception("Could not delete stack {}".format(STACK_NAME))
             return {"action": "delete", "message": "Could not delete stack {}".format(STACK_NAME), "error": traceback.format_exc()}
-
 
     try:
         template = open(os.path.join(cwd, "template.yml")).read()
