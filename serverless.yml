@@ -1,0 +1,63 @@
+service: yesterdaytabase
+
+provider:
+  name: aws
+  runtime: python2.7
+  stage: prod
+  region: us-east-1
+
+# IAM role requires extra permissions for CloudFormation, RDS, and Route53 management
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "rds:CreateDBInstance"
+        - "rds:ModifyDBInstance"
+        - "rds:RestoreDBInstanceFromDBSnapshot"
+        - "rds:DeleteDBInstance"
+      Resource: "*"
+      Condition:
+        StringEquals: {"rds:DatabaseClass": "db.t2.small"}
+    - Effect: "Allow"
+      Action:
+        - "rds:Describe*"
+        - "ec2:Describe*"
+        - "cloudformation:Describe*"
+        - "cloudwatch:PutMetricAlarm"
+        - "cloudformation:GetTemplate"
+        - "cloudformation:ValidateTemplate"
+        - "cloudformation:DeleteStack"
+        - "cloudformation:UpdateStack"
+        - "cloudformation:CreateStack"
+        - "route53:Get*"
+        - "route53:List*"
+        - "route53:ChangeResourceRecordSets"
+      Resource: "*"
+
+functions:
+  DbManager:
+    handler: handler.handler
+    events:
+      - schedule: "cron(0 11 * * ? *)"
+        enabled: true
+
+package:
+  include:
+    - template.yml
+    - handler.py
+  exclude:
+    - ".git/**"
+    - "event.json"
+    - ".npmignore"
+
+
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"

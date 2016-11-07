@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  DBName:
+    Description: Name of the new DB instance, will be combined with DomainRoot to make Route53 domain name.
+    Type: String
+  HostName:
+    Description: Name to combine with the DomainRoot to create a Route53 record
+    Type: String
+  DomainRoot:
+    Description: Domain to put the DB name record under (not the FQDN)
+    Type: String
+  SnapshotID:
+    Description: Identifier for DB snapshot
+    Type: String
+  DiskSize:
+    Description: How many gigs of storage to make available for the snapshot restore
+    Type: String
+  SecurityGroup:
+    Description: Which network security group should this instance be in?
+    Type: String
+  SubnetGroup:
+    Description: Name of the DB subnet group to place (yesterday's copy of) the database in
+    Type: String
+Resources:
+  DBAliasRecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      Comment: DNS name for a DB from yesterday's snapshot
+      HostedZoneName: !Sub "${DomainRoot}."
+      Name: !Sub "${DBName}.${DomainRoot}"
+      ResourceRecords: !GetAtt Database.Endpoint.Address
+      TTL: 300
+      Type: CNAME
+  Database:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: '50'
+      BackupRetentionPeriod: 0
+      DBInstanceClass: 'db.t2.small'
+      DBInstanceIdentifier: !Ref DBName
+      DBSnapshotIdentifier: !Ref SnapshotID
+      PubliclyAccessible: true
+      StorageType: gp2
+      DBSubnetGroupName: !Ref SubnetGroup
+      VPCSecurityGroups:
+      - !Ref SecurityGroup
