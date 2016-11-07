@@ -2,6 +2,7 @@ service: yesterdaytabase
 
 provider:
   name: aws
+  cfLogs: true
   runtime: python2.7
   stage: prod
   region: us-east-1
@@ -45,9 +46,9 @@ package:
     - template.yml
     - handler.py
   exclude:
-    - ".git/**"
-    - "event.json"
-    - ".npmignore"
+    - .git/**
+    - .gitignore
+    - event.json
 
 
 # you can add CloudFormation resource templates here
