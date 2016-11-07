@@ -22,13 +22,13 @@ log.setLevel(logging.DEBUG)
 rds = boto3.client('rds')
 cfn = boto3.client('cloudformation')
 
-DB_NAME = 'ryansb-psql-prod'
-STACK_NAME = '{}-yesterdaytabase'.format(DB_NAME)
-DOMAIN = 'ryansb.com'
-RESTORE_TO_NAME = '{}-yesterday-{}'.format(DB_NAME, datetime.datetime.utcnow().strftime('%Y-%m-%d-%H%M'))
-PRETTY_NAME = '{}-yesterday'.format(DB_NAME)
-DB_SECURITY_GROUP = 'sg-461bcf3b'
-DB_SUBNET_GROUP = 'default-vpc-3a9a805d'
+cwd = os.path.dirname(os.path.abspath(__file__))
+
+cfg = json.load(open(os.path.join(cwd, 'config.json')))
+
+STACK_NAME = '{}-yesterdaytabase'.format(cfg['db']['name'])
+RESTORE_TO_NAME = '{}-{}'.format(cfg['db']['name'], datetime.datetime.utcnow().strftime('%Y-%m-%d-%H%M'))
+PRETTY_NAME = '{}-yesterday'.format(cfg['db']['name'])
 
 
 def handler(event, context):
@@ -43,8 +43,7 @@ def handler(event, context):
 
 
     try:
-        directory = os.path.dirname(os.path.abspath(__file__))
-        template = open(os.path.join(directory, "template.yml")).read()
+        template = open(os.path.join(cwd, "template.yml")).read()
     except:
         log.exception("Failed to open `template.yml` file with IOError")
         return {"message": "Couldn't read CloudFormation template.", "error": traceback.format_exc()}
@@ -53,7 +52,7 @@ def handler(event, context):
 
     snapshots = rds.describe_db_snapshots()["DBSnapshots"]
     db_snapshots = [snap for snap in snapshots
-                      if snap["DBInstanceIdentifier"] == DB_NAME]
+                      if snap["DBInstanceIdentifier"] == cfg['db']['name']]
 
     # get the most recent snapshot by sorting by date
     latest_snapshot = sorted(db_snapshots, reverse=True,
@@ -63,11 +62,11 @@ def handler(event, context):
     stack_params = {
         "SnapshotID": identifier,
         "DiskSize": str(latest_snapshot["AllocatedStorage"]),
-        "DomainRoot": DOMAIN,
+        "DomainRoot": cfg['domain'],
         "DBName": RESTORE_TO_NAME,
         "HostName": PRETTY_NAME,
-        "SecurityGroup": DB_SECURITY_GROUP,
-        "SubnetGroup": DB_SUBNET_GROUP,
+        "SecurityGroup": cfg['db']['security_group'],
+        "SubnetGroup": cfg['db']['subnet_group'],
     }
 
     cfn_params = dict(
