@@ -27,7 +27,7 @@ Resources:
     Properties:
       Comment: DNS name for a DB from yesterday's snapshot
       HostedZoneName: !Sub "${DomainRoot}."
-      Name: !Sub "${DBName}.${DomainRoot}"
+      Name: !Sub "${HostName}.${DomainRoot}"
       ResourceRecords:
         - !GetAtt Database.Endpoint.Address
       TTL: 300
@@ -45,3 +45,7 @@ Resources:
       DBSubnetGroupName: !Ref SubnetGroup
       VPCSecurityGroups:
       - !Ref SecurityGroup
+Outputs:
+  DomainName:
+    Value: !Ref DBAliasRecord
+    Description: "DNS name for yesterday's DB"
