@@ -24,14 +24,21 @@ cfn = boto3.client('cloudformation')
 
 cwd = os.path.dirname(os.path.abspath(__file__))
 
-cfg = json.load(open(os.path.join(cwd, 'config.json')))
-
-STACK_NAME = '{}-yesterdaytabase'.format(cfg['db']['name'])
-RESTORE_TO_NAME = '{}-{}'.format(cfg['db']['name'], datetime.datetime.utcnow().strftime('%Y-%m-%d-%H%M'))
-PRETTY_NAME = '{}-yesterday'.format(cfg['db']['name'])
-
 
 def handler(event, context):
+    log.debug('{}: {}'.format(type(event), event))
+    if not isinstance(event, dict):
+        event = json.loads(event)
+
+    if event.get('config') is None:
+        cfg = json.load(open(os.path.join(cwd, 'config.json')))
+    else:
+        cfg = event.get('config')
+
+    STACK_NAME = '{}-yesterdaytabase'.format(cfg['db']['name'])
+    RESTORE_TO_NAME = '{}-{}'.format(cfg['db']['name'], datetime.datetime.utcnow().strftime('%Y-%m-%d-%H%M'))
+    PRETTY_NAME = '{}-yesterday'.format(cfg['db']['name'])
+
     if event.get("action") == "delete":
         log.info("Got event {}, deleting stack".format(json.dumps(event)))
         try:
@@ -52,6 +59,11 @@ def handler(event, context):
     snapshots = rds.describe_db_snapshots()["DBSnapshots"]
     db_snapshots = [snap for snap in snapshots
                       if snap["DBInstanceIdentifier"] == cfg['db']['name']]
+
+    if not db_snapshots:
+        return {"message": ("No matching DB snapshots - try again when there are"
+                "snapshots for database {}").format(cfg['db']['name']),
+                "error": "No DB snapshots", "action": event.get('action')}
 
     # get the most recent snapshot by sorting by date
     latest_snapshot = sorted(db_snapshots, reverse=True,
