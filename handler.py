@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
-# Author: Ryan Brown <sb@ryansb.com>
+# Copyright 2016 Ryan Brown <sb@ryansb.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 This function creates a CFN stack from yesterday's production DB
@@ -26,9 +38,10 @@ cwd = os.path.dirname(os.path.abspath(__file__))
 
 
 def handler(event, context):
-    log.debug('{}: {}'.format(type(event), event))
     if not isinstance(event, dict):
         event = json.loads(event)
+
+    log.debug("Received event {}".format(json.dumps(event)))
 
     if event.get('config') is None:
         cfg = json.load(open(os.path.join(cwd, 'config.json')))
@@ -54,7 +67,6 @@ def handler(event, context):
         log.exception("Failed to open `template.yml` file with IOError")
         return {"message": "Couldn't read CloudFormation template.", "error": traceback.format_exc()}
 
-    log.debug("Received event {}".format(json.dumps(event)))
 
     snapshots = rds.describe_db_snapshots()["DBSnapshots"]
     db_snapshots = [snap for snap in snapshots
