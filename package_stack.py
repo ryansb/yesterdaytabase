@@ -36,12 +36,6 @@ def munge_template():
         'S3Key': PREFIX + 'code.zip',
     }
 
-    # rename function since it's the only one in the package
-    #template['Resources']['DbManagerLambdaFunction']['Properties']['FunctionName'] = 'yesterdaytabase'
-    #template['Resources']['DbManagerLogGroup']['Properties']['LogGroupName'] = '/aws/lambda/yesterdaytabase'
-
-    #template['Resources']['IamPolicyLambdaExecution']['DependsOn'] = ['DbManagerLogGroup', 'DbManagerLambdaFunction']
-
     # Add a parameter so the user can supply an event that includes the DB name, domain, and other config
     template['Resources']['DbManagerEventsRuleSchedule1']['Properties']['Targets'][0]['Input'] = {'Ref': 'SourceConfiguration'}
     template['Parameters'] = {
@@ -101,5 +95,5 @@ if __name__ == '__main__':
     upload_zip(get_sha())
     template = munge_template()
     upload_template(get_sha(), template)
-    open('out.json', 'w').write(json.dumps(template, indent=2))
+    print('Successfully uploaded template & code')
 
