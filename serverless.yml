@@ -48,6 +48,7 @@ package:
   exclude:
     - .git/**
     - .gitignore
+    - config.json.example
     - event.json
 
 
