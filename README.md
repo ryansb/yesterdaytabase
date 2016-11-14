@@ -2,7 +2,8 @@
 
 Yesterdaytabase is a Lambda function that pulls previous snapshots of RDS
 databases for use as staging or testing environments. The function runs on a
-schedule and recreates the DB with a CloudFormation stack.
+schedule and recreates the DB with a CloudFormation stack. For more about the
+internals, see my [blog post][post] on it.
 
 ## Usage
 
@@ -26,8 +27,14 @@ format:
 For more databases, create more CloudWatch Event rules that have the same JSON
 format in their input field.
 
+Alternatively, you can bake the configuration into a file in the deployed
+function, called `config.json`. The format matches the `config` key in the
+event above.
+
 ## Run it
 
 Want to run it? Launch it and go. <a style="text-decoration: none" href="https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=yesterdaytabase&amp;templateURL=https://s3.amazonaws.com/demos.serverlesscode.com/pub%2flambda%2fyesterdaytabase%2ftemplate.json">
   <img style="height: 1em" src="https://serverlesscode.com/img/cloudformation-launch-stack.png" alt="Launch stack yesterdaytabase">
 </a> Fill in the database you've got snapshots of and your Route53 domain.
+
+[post]: https://serverlesscode.com/post/lambda-rds-prod-staging-pipeline/
